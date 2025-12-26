@@ -1,13 +1,13 @@
 [package]
-name = "nanochat"
+name = "nanogpt"
 version = "0.1.0"
 edition = "2024"
 description = "Nanochat in Rust"
 authors = ["Lorenzo <tunedconsulting@gmail.com>"]
 license = "Apache-2.0"
-repository = "https://github.com/tuned-org-uk/nanochat-rs"
-homepage = "https://github.com/tuned-org-uk/nanochat-rs"
-documentation = "https://docs.rs/nanochat-rs"
+repository = "https://github.com/tuned-org-uk/nanogpt-rs"
+homepage = "https://github.com/tuned-org-uk/nanogpt-rs"
+documentation = "https://docs.rs/nanogpt-rs"
 readme = "README.md"
 keywords = ["embeddings", "gpt", "llm"]
 categories = ["algorithms", "mathematics", "science"]
@@ -59,11 +59,11 @@ cuda = ["burn-cuda"]
 all-backends = ["cpu", "wgpu", "cuda"]
 
 [lib]
-name = "nanochat"
+name = "nanogpt"
 crate-type = ["rlib"]
 
 [[bin]]
-name = "nanochat"
+name = "nanogpt"
 path = "src/main.rs"
 
 [profile.release]
@@ -78,5 +78,3 @@ opt-level = 1  # Faster dev builds
 [workspace]
 # dowload bpe from the original repo
 # rustbpe = "./rustbpe/"
-
-

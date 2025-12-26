@@ -1,15 +1,15 @@
 use anyhow::Result;
 use burn::tensor::{Int, Tensor};
 
-use nanochat::{
-    backend::{get_device, print_backend_info, AutoBackend},
+use nanogpt::{
+    backend::{AutoBackend, get_device, print_backend_info},
     config::NanoChatConfig,
     gpt::GptModel,
 };
 
 fn main() -> Result<()> {
     env_logger::init();
-    
+
     print_backend_info();
     let device = get_device();
 
@@ -17,7 +17,7 @@ fn main() -> Result<()> {
     let cfg = NanoChatConfig {
         sequence_len: 64,
         vocab_size: 128,
-        n_layer: 4,  // ← Changed from 1 to 4
+        n_layer: 4, // ← Changed from 1 to 4
         n_head: 4,
         n_kv_head: 4,
         n_embd: 64,
@@ -27,7 +27,7 @@ fn main() -> Result<()> {
 
     println!("\n🔨 Testing Milestone 3: Multi-block GPT");
     println!("   n_layer = {}", cfg.n_layer);
-    
+
     let model = GptModel::<AutoBackend>::new(&cfg, &device);
 
     let seed_tokens: Vec<i64> = vec![1, 2, 3, 4];
