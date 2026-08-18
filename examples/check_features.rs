@@ -1,8 +1,10 @@
+#![recursion_limit = "256"]
+
 use anyhow::Result;
 use burn::tensor::{Int, Tensor};
 use tempfile::TempDir;
 
-use nanochat::{
+use nanogpt::{
     backend::{get_device, print_backend_info, AutoBackend},
     checkpoint::{load_checkpoint, save_checkpoint},
     config::NanoChatConfig,
