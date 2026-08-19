@@ -351,7 +351,7 @@ impl<B: Backend> CausalSelfAttention<B> {
         trace!("Attn(L{}): causal mask applied", self.layer_idx);
 
         // 2) Subtract per-row max along keys axis (dimension 3)
-        let att_max = att.clone().max_dim(3).squeeze::<3>(3); // [B, H, Tq]
+        let att_max = att.clone().max_dim(3).squeeze_dim::<3>(3); // [B, H, Tq]
         att = att - att_max.unsqueeze_dim::<4>(3); // [B, H, Tq, Tk]
         trace!(
             "Attn(L{}): stabilized by row max subtraction",

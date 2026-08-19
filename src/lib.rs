@@ -18,20 +18,18 @@
 // limitations under the License.
 
 pub mod backend;
-pub mod config;
-pub mod gpt;
-pub mod tokenizer;
-pub mod sampling;
-pub mod engine;
 pub mod checkpoint;
-pub use checkpoint::{load_checkpoint, save_checkpoint, load_weights, save_weights};
-
+pub mod config;
+pub mod engine;
+pub mod gpt;
+pub mod sampling;
+pub mod tokenizer;
+pub use checkpoint::{load_checkpoint, load_weights, save_checkpoint, save_weights};
 
 #[cfg(test)]
 mod tests;
 
-
-pub use backend::{get_device, print_backend_info, AutoBackend};
+pub use backend::{AutoBackend, get_device, print_backend_info};
 pub use config::NanoChatConfig;
 
 use std::sync::Once;
@@ -49,7 +47,6 @@ pub fn init() {
             .try_init();
     });
 }
-
 
 // pub mod tokenizer;
 // pub mod model {

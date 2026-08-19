@@ -4,7 +4,7 @@
 //!
 //! Returns token IDs as [B, 1] shaped tensors for consistent batch handling
 
-use burn::tensor::{activation, backend::Backend, Bool, Int, Tensor, TensorData};
+use burn::tensor::{Bool, Int, Tensor, TensorData, activation, backend::Backend};
 use log::debug;
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -60,14 +60,13 @@ pub fn top_p_filter<B: Backend>(logits: Tensor<B, 2>, p: f64) -> Tensor<B, 2> {
 
     let probs = activation::softmax(logits.clone(), 1);
     let probs_host: Vec<f32> = probs.to_data().to_vec().unwrap();
-    
+
     // Build keep mask as bools directly
     let mut keep_mask_bool: Vec<bool> = vec![false; batch * vocab];
 
     for b in 0..batch {
-        let mut pairs: Vec<(f32, usize)> = (0..vocab)
-            .map(|v| (probs_host[b * vocab + v], v))
-            .collect();
+        let mut pairs: Vec<(f32, usize)> =
+            (0..vocab).map(|v| (probs_host[b * vocab + v], v)).collect();
         pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
 
         let mut cum = 0.0f32;

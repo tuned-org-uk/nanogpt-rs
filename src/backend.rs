@@ -1,6 +1,6 @@
 //! Backend selection with automatic GPU detection for Burn 0.18
 
-use burn::prelude::*;
+use burn::tensor::backend::BackendTypes;
 
 // Define backend types based on enabled features
 #[cfg(feature = "cuda")]
@@ -13,7 +13,7 @@ pub type AutoBackend = burn_wgpu::Wgpu<f32, i32>;
 pub type AutoBackend = burn_ndarray::NdArray<f32>;
 
 /// Get the best available device
-pub fn get_device() -> <AutoBackend as Backend>::Device {
+pub fn get_device() -> <AutoBackend as BackendTypes>::Device {
     #[cfg(feature = "cuda")]
     {
         println!("🚀 Using CUDA backend (NVIDIA GPU)");

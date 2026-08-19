@@ -1,6 +1,6 @@
 [package]
 name = "nanogpt"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 description = "Nanochat in Rust"
 authors = ["Lorenzo <tunedconsulting@gmail.com>"]
@@ -25,10 +25,10 @@ exclude = [
 ]
 [dependencies]
 # Burn with default CPU + optional GPU backends
-burn = { version = "0.18.0", default-features = false, features = ["std", "train"] }
-burn-ndarray = { version = "0.18.0", optional = true }
-burn-wgpu = { version = "0.18.0", optional = true }
-burn-cuda = { version = "0.18.0", optional = true }
+burn = { version = "0.21.0", default-features = false, features = ["std", "train"] }
+burn-ndarray = { version = "0.21.0", optional = true }
+burn-wgpu = { version = "0.21.0", optional = true }
+burn-cuda = { version = "0.21.0", optional = true }
 
 # Core dependencies
 #bincode = "2.0.0"

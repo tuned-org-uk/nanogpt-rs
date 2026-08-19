@@ -11,6 +11,7 @@
 use log::debug;
 
 use burn::prelude::Backend;
+use burn::tensor::backend::BackendTypes;
 use burn::tensor::{Int, Tensor};
 
 use crate::{backend::AutoBackend, config::NanoChatConfig, gpt::GptModel};
@@ -142,11 +143,11 @@ fn test_generate_valid_ids() {
     let input = input.reshape([1, seed.len()]);
 
     let out = model.generate(input, 3);
-    let ids = out.to_data().to_vec::<i64>().unwrap();
+    let ids = out.to_data().to_vec::<i32>().unwrap();
 
     // All IDs should be in [0, vocab_size)
     for &id in &ids {
-        assert!(id >= 0 && id < cfg.vocab_size as i64);
+        assert!(id >= 0 && (id as i64) < cfg.vocab_size as i64);
     }
 }
 
@@ -167,8 +168,8 @@ fn test_generation_determinism() {
     let out1 = model.generate(input.clone(), 4);
     let out2 = model.generate(input, 4);
 
-    let ids1 = out1.to_data().to_vec::<i64>().unwrap();
-    let ids2 = out2.to_data().to_vec::<i64>().unwrap();
+    let ids1 = out1.to_data().to_vec::<i32>().unwrap();
+    let ids2 = out2.to_data().to_vec::<i32>().unwrap();
 
     assert_eq!(ids1, ids2, "Greedy generation should be deterministic");
 }
@@ -328,12 +329,12 @@ fn test_attention_mask_causal() {
     let full_argmax = logits_full_at_pos
         .argmax(0)
         .to_data()
-        .to_vec::<i64>()
+        .to_vec::<i32>()
         .unwrap()[0];
     let prefix_argmax = logits_prefix_at_pos
         .argmax(0)
         .to_data()
-        .to_vec::<i64>()
+        .to_vec::<i32>()
         .unwrap()[0];
 
     if full_argmax != prefix_argmax {
@@ -457,7 +458,7 @@ fn test_numerical_stability() {
 
 #[test]
 fn test_smoke_generation_multi_blocks() {
-    let device = <TestBackend as Backend>::Device::default();
+    let device = <TestBackend as BackendTypes>::Device::default();
     let cfg = NanoChatConfig {
         sequence_len: 32,
         vocab_size: 64,
@@ -477,7 +478,7 @@ fn test_smoke_generation_multi_blocks() {
 
 #[test]
 fn test_multi_block_forward_shape() {
-    let device = <TestBackend as Backend>::Device::default();
+    let device = <TestBackend as BackendTypes>::Device::default();
     let cfg = NanoChatConfig {
         sequence_len: 32,
         vocab_size: 128,
@@ -507,7 +508,7 @@ fn test_multi_block_forward_shape() {
 
 #[test]
 fn test_multi_batch_multi_block() {
-    let device = <TestBackend as Backend>::Device::default();
+    let device = <TestBackend as BackendTypes>::Device::default();
     let cfg = NanoChatConfig {
         sequence_len: 16,
         vocab_size: 64,
@@ -530,7 +531,7 @@ fn test_multi_batch_multi_block() {
 
 #[test]
 fn test_varying_sequence_lengths() {
-    let device = <TestBackend as Backend>::Device::default();
+    let device = <TestBackend as BackendTypes>::Device::default();
     let cfg = NanoChatConfig {
         sequence_len: 64,
         vocab_size: 128,
@@ -556,7 +557,7 @@ fn test_varying_sequence_lengths() {
 
 #[test]
 fn test_blocks_vector_size() {
-    let device = <TestBackend as Backend>::Device::default();
+    let device = <TestBackend as BackendTypes>::Device::default();
     let cfg = NanoChatConfig {
         sequence_len: 16,
         vocab_size: 32,
@@ -579,7 +580,7 @@ fn test_blocks_vector_size() {
 
 #[test]
 fn test_softcap_reduces_extreme_logits() {
-    let device = <TestBackend as Backend>::Device::default();
+    let device = <TestBackend as BackendTypes>::Device::default();
     let cfg = NanoChatConfig {
         sequence_len: 16,
         vocab_size: 64,
@@ -625,7 +626,7 @@ fn test_softcap_reduces_extreme_logits() {
 
 #[test]
 fn test_greedy_stable_with_softcap() {
-    let device = <TestBackend as Backend>::Device::default();
+    let device = <TestBackend as BackendTypes>::Device::default();
     let cfg = NanoChatConfig {
         sequence_len: 16,
         vocab_size: 32,
@@ -645,18 +646,18 @@ fn test_greedy_stable_with_softcap() {
     let out_with_cap = model.generate(ids.clone(), 3);
 
     // Both should produce valid token sequences (no NaN/Inf)
-    let ids_no_cap = out_no_cap.to_data().to_vec::<i64>().unwrap();
-    let ids_with_cap = out_with_cap.to_data().to_vec::<i64>().unwrap();
+    let ids_no_cap = out_no_cap.to_data().to_vec::<i32>().unwrap();
+    let ids_with_cap = out_with_cap.to_data().to_vec::<i32>().unwrap();
 
     assert!(
         ids_no_cap
             .iter()
-            .all(|&x| x >= 0 && x < cfg.vocab_size as i64)
+            .all(|&x| x >= 0 && (x as i64) < cfg.vocab_size as i64)
     );
     assert!(
         ids_with_cap
             .iter()
-            .all(|&x| x >= 0 && x < cfg.vocab_size as i64)
+            .all(|&x| x >= 0 && (x as i64) < cfg.vocab_size as i64)
     );
 
     println!("Generated without cap: {:?}", ids_no_cap);

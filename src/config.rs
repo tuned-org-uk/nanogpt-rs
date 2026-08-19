@@ -12,7 +12,7 @@ pub struct NanoChatConfig {
     pub n_kv_head: usize,
     pub n_embd: usize,
     pub block_size: usize,
-    
+
     // Training
     pub dropout: f64,
 }

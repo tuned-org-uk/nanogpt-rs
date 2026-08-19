@@ -1,4 +1,4 @@
-use burn::tensor::{backend::Backend, Int, Tensor};
+use burn::tensor::{Int, Tensor, backend::Backend};
 use log::{debug, info};
 
 use crate::gpt::GptModel;
@@ -92,7 +92,10 @@ pub struct Engine<B: Backend> {
 impl<B: Backend> Engine<B> {
     pub fn new(model: GptModel<B>, device: B::Device) -> Self {
         info!("Engine: new with {} layers", model.num_layers());
-        Self { model, _device: device }
+        Self {
+            model,
+            _device: device,
+        }
     }
 
     // Prefill runs full forward once to compute logits (no cache used).
@@ -114,17 +117,17 @@ impl<B: Backend> Engine<B> {
     ) -> Tensor<B, 3> {
         let [b, t] = last_id.dims();
         debug_assert_eq!(t, 1, "decode_next expects [B,1], got T={}", t);
-        info!("Engine: decode_next at t_pos={} [B={},T=1]", cache.position(), b);
+        info!(
+            "Engine: decode_next at t_pos={} [B={},T=1]",
+            cache.position(),
+            b
+        );
         let logits = self.model.forward_decode(last_id, cache, true);
         debug!("Engine: decode_next logits_step shape {:?}", logits.dims());
         logits
     }
 
-    pub fn stream<'a>(
-        &'a self,
-        ids: Tensor<B, 2, Int>,
-        max_new_tokens: usize,
-    ) -> Streamer<'a, B> {
+    pub fn stream<'a>(&'a self, ids: Tensor<B, 2, Int>, max_new_tokens: usize) -> Streamer<'a, B> {
         let [b, t] = ids.dims();
         info!(
             "Engine: streaming start [B={},T0={}] max_new_tokens={}",
@@ -148,11 +151,8 @@ impl<B: Backend> Engine<B> {
     ) -> (Tensor<B, 2, Int>, Tensor<B, 3>) {
         let logits_step = self.decode_next(last_id.clone(), cache); // [B,1,V]
         let [b, _, v] = logits_step.dims();
-        let next = crate::sampling::sample_with_policy(
-            logits_step.clone().reshape([b, v]),
-            policy,
-        )
-        .reshape([b, 1]);
+        let next = crate::sampling::sample_with_policy(logits_step.clone().reshape([b, v]), policy)
+            .reshape([b, 1]);
         (next, logits_step)
     }
 }
@@ -191,10 +191,7 @@ impl<'a, B: Backend> Iterator for Streamer<'a, B> {
         debug!("Streamer: logits_step [B={},T=1,V={}]", b, v);
 
         // Greedy next token
-        let next = logits_step
-            .reshape([b, v])
-            .argmax(1)
-            .reshape([b, 1]);
+        let next = logits_step.reshape([b, v]).argmax(1).reshape([b, 1]);
 
         // Append to ids
         let new_ids = Tensor::cat(vec![ids.clone(), next.clone()], 1);

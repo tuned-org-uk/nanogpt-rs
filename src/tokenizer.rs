@@ -3,7 +3,7 @@
 //! Tokenizer for NanoChat with special token support and chat templating
 //! Mirrors the Python tokenizer.py implementation
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};

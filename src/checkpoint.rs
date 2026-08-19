@@ -80,10 +80,7 @@ pub fn load_checkpoint<B: Backend>(
 }
 
 /// Save only model weights (for fine-tuning scenarios where config is known)
-pub fn save_weights<B: Backend>(
-    model: &GptModel<B>,
-    weights_path: impl AsRef<Path>,
-) -> Result<()> {
+pub fn save_weights<B: Backend>(model: &GptModel<B>, weights_path: impl AsRef<Path>) -> Result<()> {
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
     model
         .clone()

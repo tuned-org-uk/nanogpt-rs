@@ -9,29 +9,29 @@
 //     // Print backend info
 //     nanochat_burn::print_backend_info();
 //     let device = get_device();
-    
+
 //     // Load configuration
 //     let config = NanoChatConfig::default();
 //     println!("Model config: {:?}", config);
-    
+
 //     // Initialize model
 //     println!("Initializing model...");
 //     let model = GptModel::<AutoBackend>::new(config.clone(), &device);
-    
+
 //     // Load tokenizer
 //     println!("Loading tokenizer...");
 //     let tokenizer = NanoChatTokenizer::from_pretrained("gpt2")?;
-    
+
 //     // Create engine
 //     let engine = Engine::new(model, tokenizer, device);
-    
+
 //     // Generate text
 //     let prompt = "Once upon a time";
 //     println!("\nPrompt: {}", prompt);
 //     println!("Generating...\n");
-    
+
 //     let tokens = engine.tokenizer.encode(prompt)?;
-    
+
 //     // Stream generation
 //     print!("{}", prompt);
 //     for (token_column, _masks) in engine.generate(
@@ -46,7 +46,7 @@
 //         print!("{}", text);
 //     }
 //     println!("\n");
-    
+
 //     Ok(())
 // }
 fn main() {}

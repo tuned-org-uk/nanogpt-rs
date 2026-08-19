@@ -5,12 +5,12 @@ use burn::tensor::{Int, Tensor};
 use tempfile::TempDir;
 
 use nanogpt::{
-    backend::{get_device, print_backend_info, AutoBackend},
+    backend::{AutoBackend, get_device, print_backend_info},
     checkpoint::{load_checkpoint, save_checkpoint},
     config::NanoChatConfig,
     engine::{Engine, KVCache},
     gpt::GptModel,
-    sampling::{extract_last_logits, sample_with_policy, SamplingPolicy},
+    sampling::{SamplingPolicy, extract_last_logits, sample_with_policy},
 };
 
 fn main() -> Result<()> {
@@ -47,7 +47,10 @@ fn main() -> Result<()> {
     // ═════════════════════════════════════════════════════════════════════════
     println!("🔨 [M3/M5/M6/M7] Creating multi-block GPT with RoPE, MQA, QK-norm...");
     let model = GptModel::<AutoBackend>::new(&cfg, &device);
-    println!("   ✓ Model initialized with {} parameters\n", count_params(&model));
+    println!(
+        "   ✓ Model initialized with {} parameters\n",
+        count_params(&model)
+    );
 
     let seed_tokens: Vec<i64> = vec![1, 2, 3, 4, 5];
     let input = Tensor::<AutoBackend, 1, Int>::from_ints(seed_tokens.as_slice(), &device)
@@ -60,8 +63,18 @@ fn main() -> Result<()> {
     let logits_no_cap = model.forward(input.clone(), false);
     let logits_with_cap = model.forward(input.clone(), true);
 
-    let max_no_cap = logits_no_cap.clone().max().to_data().to_vec::<f32>().unwrap()[0];
-    let max_with_cap = logits_with_cap.clone().max().to_data().to_vec::<f32>().unwrap()[0];
+    let max_no_cap = logits_no_cap
+        .clone()
+        .max()
+        .to_data()
+        .to_vec::<f32>()
+        .unwrap()[0];
+    let max_with_cap = logits_with_cap
+        .clone()
+        .max()
+        .to_data()
+        .to_vec::<f32>()
+        .unwrap()[0];
 
     println!("   Max logit without softcap: {:.2}", max_no_cap);
     println!("   Max logit with softcap: {:.2}", max_with_cap);
@@ -78,13 +91,22 @@ fn main() -> Result<()> {
     println!("   Greedy: {:?}", greedy.to_data().to_vec::<i32>().unwrap());
 
     let temp = sample_with_policy(last_logits.clone(), SamplingPolicy::Temperature { t: 0.8 });
-    println!("   Temperature (0.8): {:?}", temp.to_data().to_vec::<i32>().unwrap());
+    println!(
+        "   Temperature (0.8): {:?}",
+        temp.to_data().to_vec::<i32>().unwrap()
+    );
 
     let topk = sample_with_policy(last_logits.clone(), SamplingPolicy::TopK { k: 10 });
-    println!("   Top-K (k=10): {:?}", topk.to_data().to_vec::<i32>().unwrap());
+    println!(
+        "   Top-K (k=10): {:?}",
+        topk.to_data().to_vec::<i32>().unwrap()
+    );
 
     let topp = sample_with_policy(last_logits.clone(), SamplingPolicy::TopP { p: 0.9 });
-    println!("   Top-P (p=0.9): {:?}", topp.to_data().to_vec::<i32>().unwrap());
+    println!(
+        "   Top-P (p=0.9): {:?}",
+        topp.to_data().to_vec::<i32>().unwrap()
+    );
 
     println!("   ✓ All sampling policies functional\n");
 

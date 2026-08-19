@@ -1,13 +1,15 @@
-
 // ═════════════════════════════════════════════════════════════════════════════
 // Tests
 // ═════════════════════════════════════════════════════════════════════════════
 
 use crate::tokenizer::*;
 
-// Helper to create a minimal test tokenizer
+// Helper to create a minimal test tokenizer.
+// Uses a WordLevel model so whole words map directly to vocab ids without
+// needing BPE merges (a BPE vocab with empty merges cannot compose multi-char
+// words from single chars, and with unk_token=null/byte_fallback=false the
+// pieces are silently dropped, yielding empty encodings).
 fn create_test_tokenizer() -> NanoChatTokenizer {
-    // Use GPT2 tokenizer as base
     let tokenizer_json = r#"{
         "version": "1.0",
         "truncation": null,
@@ -15,34 +17,21 @@ fn create_test_tokenizer() -> NanoChatTokenizer {
         "added_tokens": [],
         "normalizer": null,
         "pre_tokenizer": {
-            "type": "ByteLevel",
-            "add_prefix_space": false,
-            "trim_offsets": true,
-            "use_regex": true
+            "type": "Whitespace"
         },
         "post_processor": null,
-        "decoder": {
-            "type": "ByteLevel",
-            "add_prefix_space": true,
-            "trim_offsets": true,
-            "use_regex": true
-        },
+        "decoder": null,
         "model": {
-            "type": "BPE",
-            "dropout": null,
-            "unk_token": null,
-            "continuing_subword_prefix": null,
-            "end_of_word_suffix": null,
-            "fuse_unk": false,
-            "byte_fallback": false,
+            "type": "WordLevel",
+            "unk_token": "[UNK]",
             "vocab": {
                 "hello": 0,
                 "world": 1,
-                "Ġtest": 2,
-                "Ġthe": 3,
-                "Ġquick": 4
-            },
-            "merges": []
+                "test": 2,
+                "the": 3,
+                "quick": 4,
+                "[UNK]": 5
+            }
         }
     }"#;
 
@@ -112,7 +101,11 @@ fn test_encode_with_bos() {
     let ids = tokenizer.encode_with_bos(text).expect("Encoding failed");
 
     assert!(!ids.is_empty());
-    assert_eq!(ids[0], tokenizer.get_bos_token_id(), "First token should be BOS");
+    assert_eq!(
+        ids[0],
+        tokenizer.get_bos_token_id(),
+        "First token should be BOS"
+    );
 }
 
 #[test]
@@ -151,7 +144,10 @@ fn test_chat_template_single_message() {
         .expect("Template application failed");
 
     // Should have: BOS + user_start + content + user_end
-    assert!(tokens.len() >= 3, "Should have BOS, start, content, end tokens");
+    assert!(
+        tokens.len() >= 3,
+        "Should have BOS, start, content, end tokens"
+    );
     assert_eq!(tokens[0], tokenizer.get_bos_token_id());
 }
 
@@ -246,7 +242,9 @@ fn test_encode_decode_batch() {
     assert_eq!(encoded.len(), 2);
 
     let ids_refs: Vec<&[u32]> = encoded.iter().map(|v| v.as_slice()).collect();
-    let decoded = tokenizer.decode_batch(&ids_refs).expect("Batch decode failed");
+    let decoded = tokenizer
+        .decode_batch(&ids_refs)
+        .expect("Batch decode failed");
     assert_eq!(decoded.len(), 2);
 }
 
@@ -320,4 +318,3 @@ fn test_special_token_map_completeness() {
     assert!(map.contains_key("<|python_start|>"));
     assert!(map.contains_key("<|output_end|>"));
 }
-
